@@ -1,17 +1,14 @@
 import { z } from "zod";
 
-const booleanFromEnv = z
-  .enum(["true", "false"])
-  .default("false")
-  .transform((value) => value === "true");
-
+const booleanFromEnv = z.enum(["true", "false"]).default("false").transform((value) => value === "true");
 const positiveNumber = z.coerce.number().finite().positive();
 
 const envSchema = z.object({
-  SOLANA_RPC_URL: z.string().url().default("https://api.mainnet-beta.solana.com"),
+  SOLANA_RPC_URL: z.string().url().default("https://api.mainnet-beta.mainnet-beta.solana.com"),
   WALLET_PUBLIC_ADDRESS: z.string().trim().default(""),
   TRADING_MODE: z.enum(["paper", "live"]).default("paper"),
   LIVE_TRADING_ENABLED: booleanFromEnv,
+  TRADE_SIZE_USD: positiveNumber.default(1),
   TAKE_PROFIT_PERCENT: positiveNumber.default(20),
   STOP_LOSS_PERCENT: positiveNumber.default(5),
   MAX_TRADE_SIZE_SOL: z.string().trim().default(""),
@@ -26,20 +23,15 @@ export type BotConfig = z.infer<typeof envSchema>;
 export function loadConfig(source: NodeJS.ProcessEnv = process.env): BotConfig {
   const parsed = envSchema.safeParse(source);
   if (!parsed.success) {
-    const details = parsed.error.issues
-      .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-      .join("; ");
-    throw new Error(`Invalid bot configuration: ${details}`);
+    const details = parsed.error.issues.map((issue) => issue.path.join(".") + ": " + issue.message).join("; ");
+    throw new Error("Invalid bot configuration: " + details);
   }
-
   const config = parsed.data;
   if (config.TRADING_MODE === "live" && !config.LIVE_TRADING_ENABLED) {
     throw new Error("Live mode is locked: LIVE_TRADING_ENABLED must be explicitly true.");
   }
-
   if (config.TRADING_MODE === "live") {
     throw new Error("Live execution is not implemented yet. Keep TRADING_MODE=paper.");
   }
-
   return config;
 }
