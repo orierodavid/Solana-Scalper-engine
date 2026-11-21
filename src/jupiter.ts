@@ -138,12 +138,16 @@ export async function evaluateJupiterRoundTrip(input: {
   mint: string;
   tradeSizeUsd: number;
   maxPriceImpactBps: number;
+  maxRoundTripCostPercent: number;
   apiKey?: string;
 }): Promise<QuoteEvaluation> {
   const mint = new PublicKey(input.mint).toBase58();
   if (mint === WRAPPED_SOL_MINT) throw new Error("Candidate mint cannot be wrapped SOL.");
   if (!Number.isFinite(input.maxPriceImpactBps) || input.maxPriceImpactBps <= 0) {
     throw new Error("Maximum price impact must be a positive finite number.");
+  }
+  if (!Number.isFinite(input.maxRoundTripCostPercent) || input.maxRoundTripCostPercent < 0) {
+    throw new Error("Maximum round-trip cost must be a non-negative finite number.");
   }
 
   const solUsd = await getSolUsdPrice();
@@ -165,6 +169,9 @@ export async function evaluateJupiterRoundTrip(input: {
   if (buyImpactBps > input.maxPriceImpactBps) reasons.push("Buy quote exceeds maximum price impact.");
   if (sellImpactBps > input.maxPriceImpactBps) reasons.push("Sell quote exceeds maximum price impact.");
   if (!Number.isFinite(roundTripReturnPercent)) reasons.push("Round-trip return estimate is invalid.");
+  else if (roundTripReturnPercent < -input.maxRoundTripCostPercent) {
+    reasons.push("Estimated round-trip swap loss exceeds the configured cost limit.");
+  }
 
   return {
     mint,
