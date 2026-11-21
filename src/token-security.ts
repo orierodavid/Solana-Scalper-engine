@@ -70,16 +70,16 @@ export function assessTokenSecuritySnapshot(
     reasons.push("Mint is not owned by a supported SPL Token program.");
   }
 
-  const mintAuthorityActive = typeof snapshot.mintInfo.mintAuthority === "string"
-    ? snapshot.mintInfo.mintAuthority.length > 0
-    : snapshot.mintInfo.mintAuthority !== null;
-  const freezeAuthorityActive = typeof snapshot.mintInfo.freezeAuthority === "string"
-    ? snapshot.mintInfo.freezeAuthority.length > 0
-    : snapshot.mintInfo.freezeAuthority !== null;
+  const authorityState = (value: unknown): boolean | null =>
+    value === null ? false : typeof value === "string" ? value.length > 0 : null;
+  const mintAuthorityActive = authorityState(snapshot.mintInfo.mintAuthority);
+  const freezeAuthorityActive = authorityState(snapshot.mintInfo.freezeAuthority);
 
   if (snapshot.mintInfo.isInitialized !== true) reasons.push("Mint initialization is missing or false.");
-  if (mintAuthorityActive) reasons.push("Mint authority is still active.");
-  if (freezeAuthorityActive) reasons.push("Freeze authority is still active.");
+  if (mintAuthorityActive === true) reasons.push("Mint authority is still active.");
+  else if (mintAuthorityActive === null) reasons.push("Mint authority status is unavailable.");
+  if (freezeAuthorityActive === true) reasons.push("Freeze authority is still active.");
+  else if (freezeAuthorityActive === null) reasons.push("Freeze authority status is unavailable.");
 
   const supply = validAmount(snapshot.supplyAmount);
   if (supply === null || supply === 0n) {
@@ -115,6 +115,8 @@ export function assessTokenSecuritySnapshot(
   const evidenceIncomplete =
     tokenProgram === "unsupported" ||
     snapshot.mintInfo.isInitialized !== true ||
+    mintAuthorityActive === null ||
+    freezeAuthorityActive === null ||
     supply === null ||
     top10TokenAccountSharePercent === null ||
     (is2022 && !Array.isArray(snapshot.mintInfo.extensions));
