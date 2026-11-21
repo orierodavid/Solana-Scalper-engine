@@ -9,6 +9,9 @@ async function main(): Promise<void> {
   console.info("Solana Scalper Engine worker starting", {
     mode: config.TRADING_MODE,
     liveExecution: false,
+    tradeSizeUsd: config.TRADE_SIZE_USD,
+    takeProfitPercent: config.TAKE_PROFIT_PERCENT,
+    stopLossPercent: config.STOP_LOSS_PERCENT,
     pollIntervalMs: config.POLL_INTERVAL_MS,
   });
 
@@ -23,10 +26,7 @@ async function main(): Promise<void> {
 
   while (!stopping) {
     try {
-      const snapshot = await readWalletSnapshot(
-        config.SOLANA_RPC_URL,
-        config.WALLET_PUBLIC_ADDRESS,
-      );
+      const snapshot = await readWalletSnapshot(config.SOLANA_RPC_URL, config.WALLET_PUBLIC_ADDRESS);
       console.info("Wallet snapshot", {
         address: snapshot.address,
         solBalance: snapshot.solBalance,
@@ -45,10 +45,8 @@ async function main(): Promise<void> {
     } catch (error) {
       console.error("Wallet read failed; no transactions were submitted.", error);
     }
-
     await sleep(config.POLL_INTERVAL_MS);
   }
-
   console.info("Worker stopped cleanly.");
 }
 
