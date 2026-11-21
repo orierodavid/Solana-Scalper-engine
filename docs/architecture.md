@@ -10,7 +10,7 @@ A read-only bounded history scanner now pages confirmed signatures (default cap 
 3. Rebuilding token lots/entry-cost estimates from attributable swap transactions.
 4. Reconciling those estimates against current balances before managing exits.
 
-If an entry cost cannot be reliably reconstructed, or wallet activity cannot be attributed to the bot (for example, because the wallet is also used manually), the worker must mark that asset as **unmanaged** and must not invent an entry price or submit an automatic sell. The operator can inspect the wallet transaction in a Solana explorer.
+A pure FIFO lot-accounting primitive now accepts independently verified swap fills, includes network fees in buy cost and sell proceeds, and reconciles reconstructed token quantity against the current wallet balance. It marks positions **unmanaged** if the history is incomplete, fills are not verified, the token was already held at the beginning of history, a sell exceeds reconstructed inventory, or the final token balance differs. This utility does not itself verify transaction attribution and is not yet connected to the scanner or worker.\n\nIf an entry cost cannot be reliably reconstructed, or wallet activity cannot be attributed to the bot (for example, because the wallet is also used manually), the worker must mark that asset as **unmanaged** and must not invent an entry price or submit an automatic sell. The operator can inspect the wallet transaction in a Solana explorer.
 
 ## Paper strategy loop
 
