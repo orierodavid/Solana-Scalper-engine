@@ -15,7 +15,7 @@ A deliberately simple Solana wallet-based scalping bot. It monitors on-chain wal
 - Trading worker: a persistent Node.js process; a scheduled GitHub Actions run is not suitable for reliable live scalping exits.
 - Wallet/on-chain state: read-only monitoring of SOL and SPL Token/Token-2022 balances.
 - Quote evaluation: Jupiter Swap API V2 `/order` without a `taker`, so the API returns quote data only and no transaction.
-- Swap execution: not implemented. Future execution must use fresh quotes, simulation, bounded slippage, and confirmation checks.
+- Swap execution foundation: `src/jupiter-execution.ts` implements the Jupiter V2 `/order` → wallet-sign → `/execute` flow with an explicit slippage ceiling and strict response checks. It is not called by either worker, does not enable live mode, and has not yet passed repository CI or an end-to-end mainnet test. Transaction simulation, restart reconciliation, daily-loss enforcement, emergency stop, and complete fee-aware P&L remain blockers.
 
 There is no database dependency in this project.
 
