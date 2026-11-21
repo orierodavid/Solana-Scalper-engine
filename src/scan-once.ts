@@ -2,6 +2,7 @@ import "dotenv/config";
 import { loadConfig } from "./config.ts";
 import { discoverSolanaCandidates } from "./discovery.ts";
 import { evaluateJupiterRoundTrip } from "./jupiter.ts";
+import { screenSolanaToken } from "./token-security.ts";
 
 const MAX_CANDIDATES_PER_RUN = 5;
 const JUPITER_KEYLESS_INTERVAL_MS = 2_100;
@@ -15,10 +16,19 @@ async function main(): Promise<void> {
   let passed = 0;
   let rejected = 0;
   let errors = 0;
+  let securityRejected = 0;
+  let securityInconclusive = 0;
 
   for (let index = 0; index < candidates.length; index += 1) {
     const candidate = candidates[index];
     try {
+      const security = await screenSolanaToken(candidate.mint, config.SOLANA_RPC_URL);
+      if (security.status !== "screen_passed") {
+        if (security.status === "rejected") securityRejected += 1;
+        else securityInconclusive += 1;
+        continue;
+      }
+
       const result = await evaluateJupiterRoundTrip({
         mint: candidate.mint,
         tradeSizeUsd: config.TRADE_SIZE_USD,
@@ -43,6 +53,8 @@ async function main(): Promise<void> {
     quotePassed: passed,
     quoteRejected: rejected,
     quoteErrors: errors,
+    securityRejected,
+    securityInconclusive,
     tradeSizeUsd: config.TRADE_SIZE_USD,
     maxPriceImpactBps: config.MAX_PRICE_IMPACT_BPS,
     maxRoundTripCostPercent: config.MAX_ROUND_TRIP_COST_PERCENT,
@@ -51,7 +63,8 @@ async function main(): Promise<void> {
     transactionSubmission: "disabled",
     observedAt: new Date().toISOString(),
   });
-  console.info("A quote pass is not token-security clearance or authorization to trade.");
+  console.info("Security screening is a conservative RPC prefilter, not a complete audit. Largest-account concentration is not unique-wallet concentration.");
+  console.info("A quote pass is not authorization to trade.");
 }
 
 main().catch(() => {
