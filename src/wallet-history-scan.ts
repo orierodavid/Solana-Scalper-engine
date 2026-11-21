@@ -30,6 +30,7 @@ export async function scanWalletTransactionCandidates(input: {
   walletAddress: string;
   maxSignatures?: number;
   pageSize?: number;
+  before?: string;
 }): Promise<WalletTransactionScan> {
   let owner: PublicKey;
   try {
@@ -49,7 +50,7 @@ export async function scanWalletTransactionCandidates(input: {
 
   const connection = new Connection(input.rpcUrl, { commitment: "confirmed" });
   const signatures: Array<{ signature: string; slot: number; blockTime: number | null; err: unknown }> = [];
-  let before: string | undefined;
+  let before: string | undefined = input.before;
 
   while (signatures.length < maxSignatures) {
     const limit = Math.min(pageSize, maxSignatures - signatures.length);
