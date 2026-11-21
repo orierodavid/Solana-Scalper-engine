@@ -2,20 +2,18 @@ import { z } from "zod";
 
 const booleanFromEnv = z
   .enum(["true", "false"])
-  .transform((value) => value === "true")
-  .default("false");
+  .default("false")
+  .transform((value) => value === "true");
 
-const positiveNumber = z.string().trim().min(1).transform(Number).pipe(
-  z.number().finite().positive(),
-);
+const positiveNumber = z.coerce.number().finite().positive();
 
 const envSchema = z.object({
   SOLANA_RPC_URL: z.string().url(),
   WALLET_PUBLIC_ADDRESS: z.string().trim().default(""),
   TRADING_MODE: z.enum(["paper", "live"]).default("paper"),
   LIVE_TRADING_ENABLED: booleanFromEnv,
-  TAKE_PROFIT_PERCENT: positiveNumber.default("20"),
-  STOP_LOSS_PERCENT: positiveNumber.default("5"),
+  TAKE_PROFIT_PERCENT: positiveNumber.default(20),
+  STOP_LOSS_PERCENT: positiveNumber.default(5),
   MAX_TRADE_SIZE_SOL: z.string().trim().default(""),
   MAX_DAILY_LOSS_SOL: z.string().trim().default(""),
   MAX_OPEN_POSITIONS: z.coerce.number().int().positive().default(1),
