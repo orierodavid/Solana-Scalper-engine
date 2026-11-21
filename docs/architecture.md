@@ -12,6 +12,14 @@ The worker must reconstruct its view after every restart by:
 
 If an entry cost cannot be reliably reconstructed, the worker must mark that asset as **unmanaged** and must not invent an entry price or submit an automatic sell. The operator can inspect the wallet transaction in a Solana explorer.
 
+## Paper strategy loop
+
+The `paper:worker` process runs continuously without signing or submitting transactions. It uses a basic momentum entry condition: positive five-minute price change and five-minute buys greater than sells. A candidate must also pass the current Solana token-screening and RugCheck gates, then pass the buy/reverse-sell quote checks at the configured USD notional.
+
+Paper positions are held only in memory. The worker polls an open position with a fresh token-to-SOL quote, then simulates a full exit at the configured +20% take-profit or -5% stop-loss. Once closed, a mint is eligible for another paper entry only after a later scan observes a fresh valid momentum signal and all entry checks pass. The current default is one open position, a 3-second position poll and a 30-second candidate scan.
+
+This is not live execution. It does not spend SOL, sign, build, or broadcast transactions. Simulated positions are lost on restart; no database or trade-history store is introduced. Quote estimates do not fully account for priority/network fees or execution-time slippage. The scheduled GitHub Actions scan remains a ten-minute read-only job and cannot manage fast exits. A persistent host is needed even for the continuous paper loop.
+
 ## Components
 
 - Control panel/API: status, configuration validation, pause/resume, and emergency stop. No stored trade-history feature.
