@@ -1,5 +1,8 @@
 import "dotenv/config";
 import { loadConfig } from "./config.ts";
+import { readWalletSnapshot } from "./wallet.ts";
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -9,12 +12,44 @@ async function main(): Promise<void> {
     pollIntervalMs: config.POLL_INTERVAL_MS,
   });
 
-  console.info(
-    "Safe scaffold only: wallet reconciliation and swap execution are not enabled yet.",
-  );
+  if (!config.WALLET_PUBLIC_ADDRESS) {
+    console.info("Read-only monitoring is ready. Set WALLET_PUBLIC_ADDRESS to begin.");
+    return;
+  }
 
-  // The production worker loop will be added only after on-chain position
-  // reconstruction and transaction safety checks are implemented and tested.
+  let stopping = false;
+  process.once("SIGINT", () => { stopping = true; });
+  process.once("SIGTERM", () => { stopping = true; });
+
+  while (!stopping) {
+    try {
+      const snapshot = await readWalletSnapshot(
+        config.SOLANA_RPC_URL,
+        config.WALLET_PUBLIC_ADDRESS,
+      );
+      console.info("Wallet snapshot", {
+        address: snapshot.address,
+        solBalance: snapshot.solBalance,
+        tokenCount: snapshot.tokens.length,
+        recentSignatureCount: snapshot.recentSignatures.length,
+        observedAt: snapshot.observedAt,
+      });
+      for (const token of snapshot.tokens) {
+        console.info("Token holding", {
+          mint: token.mint,
+          uiAmount: token.uiAmount,
+          decimals: token.decimals,
+          tokenAccounts: token.tokenAccounts,
+        });
+      }
+    } catch (error) {
+      console.error("Wallet read failed; no transactions were submitted.", error);
+    }
+
+    await sleep(config.POLL_INTERVAL_MS);
+  }
+
+  console.info("Worker stopped cleanly.");
 }
 
 main().catch((error: unknown) => {
