@@ -29,6 +29,20 @@ npm run scan:once
 
 The scan applies the existing $5,000 liquidity, $5,000 24-hour volume, and 20 transaction filters, then evaluates at most five candidates per run. It requests buy and reverse-sell quotes sequentially, checks each leg against \`MAX_PRICE_IMPACT_BPS\`, and rejects a route when the estimated round-trip swap loss exceeds \`MAX_ROUND_TRIP_COST_PERCENT\` (default 3%). Public CI logs contain aggregate counts only, not wallet data or token identifiers. A passing quote is only a quote-quality result; it is not a signal to buy and does not establish token safety or include every wallet/network cost.
 
+## Paper scalping loop
+
+Run the persistent, read-only paper strategy with:
+
+```bash
+npm run paper:worker
+```
+
+The paper worker checks for a short-term entry signal (positive 5-minute price change and more 5-minute buys than sells), then applies the existing token-screening gates and buy/reverse-sell quote checks. It simulates a $1 entry only when those checks pass. While a paper position is open, it requests a fresh token-to-SOL exit quote every polling cycle and closes the simulated position at the configured +20% take-profit or -5% stop-loss threshold. After closing, the same mint can be considered again only after a fresh scan confirms the momentum signal and quote checks still pass.
+
+Paper positions exist only in process memory. They are not database records and are lost when the worker restarts. The worker never signs, builds, or submits a Solana transaction; it does not spend wallet funds. Quote-based return estimates do not fully include network/priority fees or execution-time slippage and are not evidence that a live trade would achieve the target. This is a paper strategy harness, not live automated trading.
+
+The default market scan interval is 30 seconds and the position valuation poll interval is 3 seconds. A persistent host is required to keep the process running. The GitHub Actions workflow that runs every 10 minutes remains a separate discovery/quote check and is not suitable for managing live scalp exits.
+
 ## Token security prefilter
 
 Before requesting Jupiter quotes, the scheduled scanner now checks each candidate through Solana RPC: supported SPL Token program ownership, parsed mint initialization, revoked mint/freeze authorities, non-zero supply, selected high-risk Token-2022 extensions, and the combined share held by the ten largest token accounts. Active mint/freeze authorities, selected risky extensions, and top-ten token-account concentration above 50% are rejected. Missing or incomplete RPC evidence is inconclusive and is never sent to quote evaluation.
