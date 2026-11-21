@@ -201,3 +201,25 @@ export async function evaluateJupiterRoundTrip(input: {
     networkAndWalletCosts: "not fully included in quote-only evaluation",
   };
 }
+
+export async function quoteTokenToSol(input: {
+  mint: string;
+  tokenAmount: string;
+  maxPriceImpactBps: number;
+  apiKey?: string;
+}): Promise<{ outputLamports: string; priceImpactBps: number }> {
+  const mint = new PublicKey(input.mint).toBase58();
+  if (mint === WRAPPED_SOL_MINT) throw new Error("Position mint cannot be wrapped SOL.");
+  if (!/^\\d+$/.test(input.tokenAmount) || BigInt(input.tokenAmount) <= 0n) {
+    throw new Error("Position token amount must be a positive integer base-unit value.");
+  }
+  if (!Number.isFinite(input.maxPriceImpactBps) || input.maxPriceImpactBps <= 0) {
+    throw new Error("Maximum price impact must be a positive finite number.");
+  }
+  const order = await getQuote(mint, WRAPPED_SOL_MINT, input.tokenAmount, input.apiKey);
+  const impact = priceImpactToBps(order);
+  if (impact === null || impact > input.maxPriceImpactBps) {
+    throw new Error("Exit quote is missing price-impact data or exceeds the configured limit.");
+  }
+  return { outputLamports: order.outAmount as string, priceImpactBps: impact };
+}
