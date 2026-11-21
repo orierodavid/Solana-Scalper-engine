@@ -19,6 +19,10 @@ test("supports deprecated decimal-ratio price impact field", () => {
   assert.equal(priceImpactToBps({ priceImpactPct: "0.001" }), 10);
 });
 
+test("uses absolute value for signed price impact", () => {
+  assert.equal(priceImpactToBps({ priceImpact: -0.1 }), 10);
+});
+
 test("rejects missing price impact data", () => {
   assert.equal(priceImpactToBps({}), null);
 });
