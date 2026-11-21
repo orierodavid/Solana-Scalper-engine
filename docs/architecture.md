@@ -4,13 +4,13 @@
 
 The Solana wallet is the durable record of confirmed swaps and token balances. This project intentionally does not add Supabase, PostgreSQL, Redis, or a trade-history database.
 
-The worker must reconstruct its view after every restart by:
+A read-only bounded history scanner now pages confirmed signatures (default cap 200, configurable up to 5,000) and analyses parsed balance changes. It is a diagnostic primitive only: single-token/native SOL balance deltas are labelled possible swaps, ambiguous or incomplete metadata is not promoted to a trade, and failed transactions are excluded. It is not yet connected to the worker or to position recovery. A possible swap is not proof it was initiated by this bot.\n\nThe worker must reconstruct its view after every restart by:
 1. Reading the configured wallet's SOL and token balances.
 2. Reading recent confirmed wallet signatures and transaction details.
 3. Rebuilding token lots/entry-cost estimates from attributable swap transactions.
 4. Reconciling those estimates against current balances before managing exits.
 
-If an entry cost cannot be reliably reconstructed, the worker must mark that asset as **unmanaged** and must not invent an entry price or submit an automatic sell. The operator can inspect the wallet transaction in a Solana explorer.
+If an entry cost cannot be reliably reconstructed, or wallet activity cannot be attributed to the bot (for example, because the wallet is also used manually), the worker must mark that asset as **unmanaged** and must not invent an entry price or submit an automatic sell. The operator can inspect the wallet transaction in a Solana explorer.
 
 ## Paper strategy loop
 
