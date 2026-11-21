@@ -78,3 +78,13 @@ test("returns incomplete when wallet or metadata is missing", () => {
   assert.equal(analyzeWalletTransactionBalances("Missing", tx()).classification, "incomplete");
   assert.equal(analyzeWalletTransactionBalances(wallet, tx({ postTokenBalances: null })).classification, "incomplete");
 });
+
+test("fails closed when token ownership metadata is missing", () => {
+  const result = analyzeWalletTransactionBalances(wallet, tx({
+    postTokenBalances: [{
+      accountIndex: 1, mint,
+      uiTokenAmount: { amount: "1000", decimals: 6 },
+    }],
+  }));
+  assert.equal(result.classification, "incomplete");
+});
