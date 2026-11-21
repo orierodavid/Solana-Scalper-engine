@@ -57,6 +57,7 @@ The scanner also calls RugCheck's public read-only report-summary endpoint. It r
 - Dedicated wallet with limited funds.
 - Server-side signing only; no private key exposed to browser or logs.
 - Explicit live-trading enable flag and startup validation.
+- A pure fail-closed entry guard exists in `src/live-risk.ts` and has unit tests for emergency stop, token and quote gates, duplicate in-flight order, maximum trade size, daily loss and concurrent positions. It is not yet connected to a worker; callers must supply independently reconciled values. It must not be treated as an active production circuit breaker until integrated with persistent/reconstructed wallet state.
 - Maximum trade size, enforced maximum daily loss, and maximum concurrent positions.
 - Token mint and liquidity screening; reject frozen/unsupported token accounts and suspicious assets.
 - Quote freshness, price impact, slippage cap, transaction simulation, and confirmation checks.
