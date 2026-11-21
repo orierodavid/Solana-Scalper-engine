@@ -3,6 +3,7 @@ import { loadConfig } from "./config.ts";
 import { discoverSolanaCandidates } from "./discovery.ts";
 import { evaluateJupiterRoundTrip } from "./jupiter.ts";
 import { screenSolanaToken } from "./token-security.ts";
+import { screenWithRugCheck } from "./rugcheck.ts";
 
 const MAX_CANDIDATES_PER_RUN = 5;
 const JUPITER_KEYLESS_INTERVAL_MS = 2_100;
@@ -18,6 +19,8 @@ async function main(): Promise<void> {
   let errors = 0;
   let securityRejected = 0;
   let securityInconclusive = 0;
+  let rugCheckRejected = 0;
+  let rugCheckInconclusive = 0;
 
   for (let index = 0; index < candidates.length; index += 1) {
     const candidate = candidates[index];
@@ -26,6 +29,13 @@ async function main(): Promise<void> {
       if (security.status !== "screen_passed") {
         if (security.status === "rejected") securityRejected += 1;
         else securityInconclusive += 1;
+        continue;
+      }
+
+      const rugCheck = await screenWithRugCheck(candidate.mint);
+      if (rugCheck.status !== "screen_passed") {
+        if (rugCheck.status === "rejected") rugCheckRejected += 1;
+        else rugCheckInconclusive += 1;
         continue;
       }
 
@@ -55,6 +65,8 @@ async function main(): Promise<void> {
     quoteErrors: errors,
     securityRejected,
     securityInconclusive,
+    rugCheckRejected,
+    rugCheckInconclusive,
     tradeSizeUsd: config.TRADE_SIZE_USD,
     maxPriceImpactBps: config.MAX_PRICE_IMPACT_BPS,
     maxRoundTripCostPercent: config.MAX_ROUND_TRIP_COST_PERCENT,
@@ -63,7 +75,7 @@ async function main(): Promise<void> {
     transactionSubmission: "disabled",
     observedAt: new Date().toISOString(),
   });
-  console.info("Security screening is a conservative RPC prefilter, not a complete audit. Largest-account concentration is not unique-wallet concentration.");
+  console.info("Security screening combines Solana RPC checks with RugCheck report summaries. Largest-account concentration is not unique-wallet concentration; provider reports are heuristic and may be incomplete.");
   console.info("A quote pass is not authorization to trade.");
 }
 
