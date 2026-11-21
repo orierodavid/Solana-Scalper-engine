@@ -19,6 +19,12 @@ If an entry cost cannot be reliably reconstructed, the worker must mark that ass
 - Solana RPC: wallet balances, signatures, transaction details, and confirmation.
 - Swap router: obtains quotes and, in a future stage, builds swap transactions. Every transaction must be simulated and checked before signing where supported.
 
+## Token security prefilter
+
+Before quote evaluation, the scanner reads parsed mint state, token supply and the ten largest token accounts from the configured Solana RPC endpoint. It requires a supported legacy SPL Token or Token-2022 program, initialized mint, explicit revoked mint and freeze authorities, valid non-zero supply, and complete largest-account data. It rejects active mint/freeze authorities, selected high-risk Token-2022 extensions (transfer-fee config, permanent delegate, transfer hook, non-transferable and confidential-transfer extensions), frozen default account state, and top-ten token-account concentration above 50%. Incomplete evidence is inconclusive and blocks quote evaluation.
+
+Largest token accounts are not the same as beneficial owners: pools, escrows and program-controlled accounts can distort the concentration proxy. This is a fail-closed prefilter, not a full RugCheck/insider analysis, LP-lock audit, honeypot simulation, or guarantee against malicious behavior. No aggregate score or claim of safety is inferred.
+
 ## Quote-only Jupiter integration
 
 - Uses Jupiter Swap API V2 `GET /order` without the `taker` parameter. Jupiter documents that this returns quote data with `transaction: null`.
