@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Solana Scalper Engine</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#080a0d; color:#f4f5f7; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:24px; }
+    main { width:min(100%,560px); border:1px solid #262b33; border-radius:18px; background:#10141a; padding:28px; box-shadow:0 18px 60px #0008; }
+    .eyebrow { color:#d9a93f; font-size:12px; letter-spacing:.16em; font-weight:700; text-transform:uppercase; }
+    h1 { margin:12px 0 8px; font-size:clamp(25px,5vw,34px); }
+    p { color:#aeb6c2; line-height:1.55; }
+    label { display:block; margin:22px 0 8px; color:#d8dde5; font-size:14px; font-weight:600; }
+    input { width:100%; border:1px solid #343c48; border-radius:10px; padding:13px 14px; background:#090c11; color:#fff; font:inherit; }
+    button { width:100%; margin-top:14px; padding:14px 18px; border:0; border-radius:10px; background:#d9a93f; color:#17130a; font:700 15px inherit; cursor:pointer; }
+    button:disabled { opacity:.55; cursor:wait; }
+    pre { display:none; white-space:pre-wrap; overflow-wrap:anywhere; padding:14px; border-radius:10px; background:#090c11; border:1px solid #29313c; color:#cbd5e1; font-size:12px; line-height:1.5; }
+    .notice { margin-top:18px; padding:12px 14px; border-left:3px solid #d9a93f; background:#1a1a16; color:#d7d1bd; font-size:13px; line-height:1.5; }
+    .status { min-height:22px; margin-top:14px; font-size:14px; color:#d9a93f; }
+    footer { margin-top:22px; color:#707987; font-size:12px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Manual control</div>
+    <h1>Solana Scalper Engine</h1>
+    <p>Run a bounded market discovery and quote scan on demand. Each run checks up to five candidates.</p>
+    <label for="secret">Bot trigger secret</label>
+    <input id="secret" type="password" autocomplete="off" spellcheck="false" placeholder="Enter your Vercel BOT_TRIGGER_SECRET">
+    <button id="start" type="button">Start Scan</button>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+    <pre id="result" aria-label="Scan result"></pre>
+    <div class="notice"><strong>Read-only mode.</strong> This page only runs market and quote checks. It does not sign transactions, buy tokens, sell tokens, or submit trades.</div>
+    <footer>The trigger secret is used only for this request and is not saved by this page.</footer>
+  </main>
+  <script>
+    const button = document.getElementById("start");
+    const secretInput = document.getElementById("secret");
+    const status = document.getElementById("status");
+    const result = document.getElementById("result");
+    button.addEventListener("click", async () => {
+      const secret = secretInput.value.trim();
+      result.style.display = "none";
+      result.textContent = "";
+      if (!secret) {
+        status.textContent = "Enter your trigger secret first.";
+        secretInput.focus();
+        return;
+      }
+      button.disabled = true;
+      status.textContent = "Running read-only scan…";
+      try {
+        const response = await fetch("/api/scan", {
+          method: "POST",
+          headers: { "x-bot-trigger-secret": secret }
+        });
+        const body = await response.json().catch(() => ({ error: "The server returned an unreadable response." }));
+        result.textContent = JSON.stringify(body, null, 2);
+        result.style.display = "block";
+        status.textContent = response.ok ? "Scan completed." : "Scan could not be completed.";
+      } catch {
+        status.textContent = "Could not reach the scan service. Try again.";
+      } finally {
+        secretInput.value = "";
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
