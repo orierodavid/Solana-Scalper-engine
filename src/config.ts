@@ -16,6 +16,7 @@ const envSchema = z.object({
   MAX_OPEN_POSITIONS: z.coerce.number().int().positive().default(1),
   MAX_SLIPPAGE_BPS: z.coerce.number().int().min(1).max(500).default(100),
   MAX_PRICE_IMPACT_BPS: z.coerce.number().int().min(1).max(500).default(100),
+  MAX_ROUND_TRIP_COST_PERCENT: z.coerce.number().finite().min(0).max(50).default(3),
   POLL_INTERVAL_MS: z.coerce.number().int().min(1000).default(3000),
 });
 
