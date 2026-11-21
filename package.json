@@ -10,7 +10,8 @@
     "monitor:once": "node --experimental-strip-types src/monitor-once.ts",
     "discover:once": "node --experimental-strip-types src/discover-once.ts",
     "quote:once": "node --experimental-strip-types src/quote-once.ts",
-    "scan:once": "node --experimental-strip-types src/scan-once.ts"
+    "scan:once": "node --experimental-strip-types src/scan-once.ts",
+    "paper:worker": "node --experimental-strip-types src/paper-worker.ts"
   },
   "engines": {
     "node": ">=22.6.0"
