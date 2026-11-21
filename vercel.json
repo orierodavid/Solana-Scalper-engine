@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/scan.ts": {
+      "maxDuration": 300,
+      "includeFiles": "src/**"
+    }
+  }
+}
