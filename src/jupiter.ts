@@ -68,10 +68,12 @@ export function usdToSolLamports(usd: number, solUsd: number): bigint {
 }
 
 export function priceImpactToBps(order: Pick<JupiterOrder, "priceImpact" | "priceImpactPct">): number | null {
-  const impactPoints = nonNegativeNumber(order.priceImpact);
-  if (impactPoints !== null) return impactPoints * 100;
-  const legacyRatio = nonNegativeNumber(order.priceImpactPct);
-  if (legacyRatio !== null) return legacyRatio * 10_000;
+  const impactPoints = typeof order.priceImpact === "number" ? order.priceImpact : Number(order.priceImpact);
+  if (Number.isFinite(impactPoints)) return Math.abs(impactPoints) * 100;
+  const legacyRatio = typeof order.priceImpactPct === "number"
+    ? order.priceImpactPct
+    : Number(order.priceImpactPct);
+  if (Number.isFinite(legacyRatio)) return Math.abs(legacyRatio) * 10_000;
   return null;
 }
 
