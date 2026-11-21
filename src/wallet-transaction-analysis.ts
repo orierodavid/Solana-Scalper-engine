@@ -68,6 +68,7 @@ export function analyzeWalletTransactionBalances(
   }
 
   const totals = new Map<string, { before: bigint; after: bigint; decimals: number; invalid: boolean }>();
+  let metadataIncomplete = false;
   const add = (entries: ParsedTokenBalance[], side: "before" | "after") => {
     for (const item of entries) {
       if (item.owner !== walletAddress) continue;
@@ -86,6 +87,7 @@ export function analyzeWalletTransactionBalances(
   };
   add(transaction.preTokenBalances, "before");
   add(transaction.postTokenBalances, "after");
+  if (metadataIncomplete) return incomplete("Token balance ownership or amount metadata is incomplete.");
 
   const tokenDeltas = [...totals.entries()].map(([mint, value]) => ({
     mint,
