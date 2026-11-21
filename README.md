@@ -19,6 +19,16 @@ A deliberately simple Solana wallet-based scalping bot. It monitors on-chain wal
 
 There is no database dependency in this project.
 
+## Automated discovery and quote scan
+
+Run a single read-only discovery/quote cycle with:
+
+\`\`\`bash
+npm run scan:once
+\`\`\`
+
+The scan applies the existing $5,000 liquidity, $5,000 24-hour volume, and 20 transaction filters, then evaluates at most five candidates per run. It requests buy and reverse-sell quotes sequentially, checks each leg against \`MAX_PRICE_IMPACT_BPS\`, and rejects a route when the estimated round-trip swap loss exceeds \`MAX_ROUND_TRIP_COST_PERCENT\` (default 3%). Public CI logs contain aggregate counts only, not wallet data or token identifiers. A passing quote is only a quote-quality result; it is not a signal to buy and does not establish token safety or include every wallet/network cost.
+
 ## Quote-only test
 
 With Node.js 22.6+ installed, copy `.env.example` to `.env` and run:
