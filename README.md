@@ -16,7 +16,7 @@ A deliberately simple Solana wallet-based scalping bot. It monitors on-chain wal
 
 - **Web control panel/API:** deployed on Vercel.
 - **Trading worker:** a persistent Node.js process that monitors positions and evaluates exits. It must run on an always-on worker host; Vercel serverless functions are not a substitute for a continuously running process.
-- **Wallet/on-chain state:** used to discover holdings and confirmed transactions. The worker must reconcile state after restarts rather than trust volatile memory.
+- **Wallet/on-chain state:** read-only monitoring of SOL balance, SPL Token/Token-2022 holdings, and recent signatures. No wallet private key is needed for this stage.
 - **Swap execution:** Jupiter routes with transaction simulation, slippage limits, and confirmation checks.
 
 There is no database dependency in this project. The worker may keep temporary in-memory caches, but they are disposable and must be rebuildable from on-chain data.
@@ -32,7 +32,7 @@ Live trading remains locked until wallet signing, token screening, swap simulati
 ## Getting started
 
 1. Copy `.env.example` to `.env` for local development.
-2. Configure a trusted Solana RPC endpoint.
+2. Configure a trusted Solana RPC endpoint and your public wallet address in `WALLET_PUBLIC_ADDRESS`.
 3. Start in paper/simulation mode.
 4. Run the tests before enabling any live execution.
 
