@@ -35,6 +35,8 @@ Before requesting Jupiter quotes, the scheduled scanner now checks each candidat
 
 The top-ten figure is a token-account concentration proxy, not unique-wallet ownership. Pool, escrow, burn and other program-controlled accounts can distort it; this conservative prefilter is not a complete holder/insider analysis, liquidity-lock verification, honeypot test, or rug-pull audit. No token is declared safe.
 
+The scanner also requires a RugCheck report summary. It rejects normalized risk scores above 40, high/critical/danger findings, and reported LP lock coverage below 50%; 50–79.99% LP lock coverage is inconclusive and blocks quotes. At least 80% reported LP lock coverage is required to continue. If RugCheck is unavailable or omits required fields, the candidate is not quoted. These are conservative project thresholds, not guarantees; LP lock coverage is provider-reported and does not prove that liquidity cannot be withdrawn through other mechanisms.
+
 ## Quote-only test
 
 With Node.js 22.6+ installed, copy `.env.example` to `.env` and run:
