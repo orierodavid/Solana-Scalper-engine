@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { loadConfig } from "./config.ts";
 
 async function main(): Promise<void> {
