@@ -25,5 +25,5 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
-      - name: Discover market candidates (read-only)
-        run: npm run discover:once
+      - name: Discover candidates and evaluate Jupiter quotes (read-only)
+        run: npm run scan:once
