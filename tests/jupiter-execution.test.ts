@@ -48,6 +48,7 @@ test("requests a fresh order, signs it, and accepts only Jupiter-confirmed execu
       assert.equal(parsed.pathname, "/swap/v2/order");
       assert.equal(parsed.searchParams.get("taker"), signer.publicKey.toBase58());
       assert.equal(parsed.searchParams.get("slippageBps"), "100");
+      assert.equal(parsed.searchParams.get("maxSupportedTransactionVersion"), "0");
       return new Response(JSON.stringify({
         inputMint: INPUT_MINT,
         outputMint: OUTPUT_MINT,
