@@ -8,7 +8,7 @@ const booleanFromEnv = z
 const positiveNumber = z.coerce.number().finite().positive();
 
 const envSchema = z.object({
-  SOLANA_RPC_URL: z.string().url(),
+  SOLANA_RPC_URL: z.string().url().default("https://api.mainnet-beta.solana.com"),
   WALLET_PUBLIC_ADDRESS: z.string().trim().default(""),
   TRADING_MODE: z.enum(["paper", "live"]).default("paper"),
   LIVE_TRADING_ENABLED: booleanFromEnv,
