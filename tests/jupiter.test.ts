@@ -25,4 +25,6 @@ test("uses absolute value for signed price impact", () => {
 
 test("rejects missing price impact data", () => {
   assert.equal(priceImpactToBps({}), null);
+  assert.equal(priceImpactToBps({ priceImpact: null }), null);
+  assert.equal(priceImpactToBps({ priceImpact: "" }), null);
 });
