@@ -1,0 +1,22 @@
+{
+  "name": "solana-scalper-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Wallet-based Solana scalping engine with guarded automated exits",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test",
+    "worker": "node --experimental-strip-types src/worker.ts"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.98.4",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.3"
+  }
+}
