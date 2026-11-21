@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { analyzeWalletTransactionBalances } from "../src/wallet-transaction-analysis.ts";
+import { analyzeWalletTransactionBalances, type ParsedWalletTransactionBalances } from "../src/wallet-transaction-analysis.ts";
 
 const wallet = "Wallet111111111111111111111111111111111111";
 const mint = "Mint1111111111111111111111111111111111111";
 
-function tx(overrides: Record<string, unknown> = {}) {
+function tx(overrides: Partial<ParsedWalletTransactionBalances> = {}) {
   return {
     accountKeys: [wallet, "Other11111111111111111111111111111111111"],
     preBalances: [2_000_000_000, 1_000_000],
