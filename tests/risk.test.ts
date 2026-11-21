@@ -8,7 +8,7 @@ test("calculates net return after estimated fees", () => {
     estimatedExitValueSol: 1.25,
     estimatedFeesSol: 0.05,
   });
-  assert.equal(result, 20);
+  assert.ok(Math.abs(result - 20) < 1e-10, `expected approximately 20%, received ${result}`);
 });
 
 test("triggers take profit at configured threshold", () => {
