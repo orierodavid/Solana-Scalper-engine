@@ -7,10 +7,28 @@ import { screenWithRugCheck } from "./rugcheck.ts";
 
 const MAX_CANDIDATES_PER_RUN = 5;
 const JUPITER_KEYLESS_INTERVAL_MS = 2_100;
-
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function main(): Promise<void> {
+export type ReadOnlyScanSummary = {
+  discoveredCandidates: number;
+  maxCandidatesPerRun: number;
+  quotePassed: number;
+  quoteRejected: number;
+  quoteErrors: number;
+  securityRejected: number;
+  securityInconclusive: number;
+  rugCheckRejected: number;
+  rugCheckInconclusive: number;
+  tradeSizeUsd: number;
+  maxPriceImpactBps: number;
+  maxRoundTripCostPercent: number;
+  execution: "disabled";
+  walletSigning: "disabled";
+  transactionSubmission: "disabled";
+  observedAt: string;
+};
+
+export async function runReadOnlyScan(): Promise<ReadOnlyScanSummary> {
   const config = loadConfig();
   const candidates = (await discoverSolanaCandidates()).slice(0, MAX_CANDIDATES_PER_RUN);
 
@@ -53,11 +71,10 @@ async function main(): Promise<void> {
       errors += 1;
     }
 
-    // Stay below the documented keyless Jupiter request rate between candidates.
     if (index < candidates.length - 1) await wait(JUPITER_KEYLESS_INTERVAL_MS);
   }
 
-  console.info("Read-only discovery and quote scan completed.", {
+  const summary: ReadOnlyScanSummary = {
     discoveredCandidates: candidates.length,
     maxCandidatesPerRun: MAX_CANDIDATES_PER_RUN,
     quotePassed: passed,
@@ -74,12 +91,14 @@ async function main(): Promise<void> {
     walletSigning: "disabled",
     transactionSubmission: "disabled",
     observedAt: new Date().toISOString(),
-  });
+  };
+  console.info("Read-only discovery and quote scan completed.", summary);
   console.info("Security screening combines Solana RPC checks with RugCheck report summaries. Largest-account concentration is not unique-wallet concentration; provider reports are heuristic and may be incomplete.");
   console.info("A quote pass is not authorization to trade.");
+  return summary;
 }
 
-main().catch(() => {
+runReadOnlyScan().catch(() => {
   console.error("Read-only discovery and quote scan failed. No trades were submitted.");
   process.exitCode = 1;
 });
