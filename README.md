@@ -31,7 +31,7 @@ Live trading remains locked until wallet signing, token screening, swap simulati
 
 ## Getting started
 
-1. Copy `.env.example` to `.env.local` for local development.
+1. Copy `.env.example` to `.env` for local development.
 2. Configure a trusted Solana RPC endpoint.
 3. Start in paper/simulation mode.
 4. Run the tests before enabling any live execution.
