@@ -73,3 +73,15 @@ test("does not pass unsupported token programs", () => {
   });
   assert.equal(result.status, "inconclusive");
 });
+
+test("does not pass unknown Token-2022 extensions", () => {
+  const result = assessTokenSecuritySnapshot("Mint111111111111111111111111111111111111", {
+    ...base,
+    ownerProgram: TOKEN_2022_PROGRAM_ID.toBase58(),
+    mintInfo: {
+      ...base.mintInfo,
+      extensions: [{ extension: "futureUnknownExtension", state: {} }],
+    },
+  });
+  assert.equal(result.status, "inconclusive");
+});
