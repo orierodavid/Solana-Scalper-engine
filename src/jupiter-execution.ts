@@ -11,6 +11,7 @@ type OrderResponse = {
   requestId?: unknown;
   router?: unknown;
   lastValidBlockHeight?: unknown;
+  transactionVersion?: unknown;
 };
 
 type ExecuteResponse = {
@@ -64,6 +65,7 @@ export async function executeJupiterSwap(input: {
     amount: input.inputAmount,
     taker: input.signer.publicKey.toBase58(),
     slippageBps: String(input.maxSlippageBps),
+    maxSupportedTransactionVersion: "0",
   }).toString();
 
   const orderResponse = await fetcher(orderUrl, {
@@ -95,6 +97,10 @@ export async function executeJupiterSwap(input: {
     transaction = VersionedTransaction.deserialize(Buffer.from(order.transaction, "base64"));
   } catch {
     throw new Error("Jupiter returned an invalid versioned transaction; refusing to sign.");
+  }
+
+  if (order.transactionVersion !== undefined && order.transactionVersion !== 0) {
+    throw new Error("Jupiter returned an unsupported transaction version; refusing to sign.");
   }
 
   const requiredSignerCount = transaction.message.header.numRequiredSignatures;
