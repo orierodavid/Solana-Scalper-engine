@@ -51,8 +51,6 @@ const HIGH_RISK_EXTENSIONS = new Set([
   "confidentialTransferFeeConfig",
   "pausableConfig",
 ]);
-c
-
 
 function validAmount(value: string): bigint | null {
   if (!/^\d+$/.test(value)) return null;
