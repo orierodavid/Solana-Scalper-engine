@@ -27,9 +27,9 @@ export type Candidate = {
 };
 
 const API = "https://api.dexscreener.com";
-const MIN_LIQUIDITY_USD = 25_000;
-const MIN_VOLUME_24H_USD = 50_000;
-const MIN_TXNS_24H = 100;
+const MIN_LIQUIDITY_USD = 5_000;
+const MIN_VOLUME_24H_USD = 5_000;
+const MIN_TXNS_24H = 20;
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url, {
