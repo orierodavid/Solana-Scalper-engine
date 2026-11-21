@@ -22,8 +22,10 @@ export interface PaperExitEvaluation {
 export class PaperPositionBook {
   private readonly openPositions = new Map<string, PaperPosition>();
   private readonly completedCycles = new Map<string, number>();
+  private readonly maxOpenPositions: number;
 
-  constructor(private readonly maxOpenPositions = 1) {
+  constructor(maxOpenPositions = 1) {
+    this.maxOpenPositions = maxOpenPositions;
     if (!Number.isInteger(maxOpenPositions) || maxOpenPositions < 1) {
       throw new Error("Maximum open positions must be a positive integer.");
     }
