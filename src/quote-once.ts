@@ -13,6 +13,7 @@ async function main(): Promise<void> {
     mint,
     tradeSizeUsd: config.TRADE_SIZE_USD,
     maxPriceImpactBps: config.MAX_PRICE_IMPACT_BPS,
+    maxRoundTripCostPercent: config.MAX_ROUND_TRIP_COST_PERCENT,
     apiKey: process.env.JUPITER_API_KEY?.trim() || undefined,
   });
 
