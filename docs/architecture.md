@@ -15,9 +15,19 @@ If an entry cost cannot be reliably reconstructed, the worker must mark that ass
 ## Components
 
 - Control panel/API: status, configuration validation, pause/resume, and emergency stop. No stored trade-history feature.
-- Persistent worker: polls/reconciles wallet state, screens assets, evaluates exits, and submits swaps.
+- Persistent worker: polls/reconciles wallet state, screens assets, evaluates exits, and submits swaps only after all required safeguards are implemented.
 - Solana RPC: wallet balances, signatures, transaction details, and confirmation.
-- Swap router: obtains quotes and builds swap transactions. Every transaction is simulated and checked before signing where supported.
+- Swap router: obtains quotes and, in a future stage, builds swap transactions. Every transaction must be simulated and checked before signing where supported.
+
+## Quote-only Jupiter integration
+
+- Uses Jupiter Swap API V2 `GET /order` without the `taker` parameter. Jupiter documents that this returns quote data with `transaction: null`.
+- Converts the configured USD notional into SOL lamports using the most liquid wrapped-SOL/stablecoin pair from DexScreener.
+- Requests a buy quote and a reverse sell quote for the exact quoted token output. Both requests are read-only.
+- Rejects missing/mismatched quote amounts, missing price-impact data, and price impact above `MAX_PRICE_IMPACT_BPS`.
+- Does not sign, build, or submit transactions. Quote evaluation is not token-security clearance or live-trade authorization.
+- The round-trip quote includes route pricing/quoted swap charges, but does not fully establish wallet-specific rent, signature/priority fees, or execution-time slippage. Those must be checked separately before live trading.
+- Keyless Jupiter requests are rate-limited; an optional API key can be supplied privately as `JUPITER_API_KEY`.
 
 ## Exit rules
 
@@ -41,7 +51,6 @@ If an entry cost cannot be reliably reconstructed, the worker must mark that ass
 ## Hosting
 
 Vercel is suitable for the web control panel and short API requests. The trading worker requires a persistent process host. A Vercel Cron schedule is not equivalent to an always-running process and should not be used as the sole mechanism for tight scalping exits.
-
 
 ## Implemented read-only monitoring
 
