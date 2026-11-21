@@ -2,7 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { evaluateLiveEntryGuard } from "../src/live-risk.ts";
 
-function deniedReason(result: ReturnType<typeof evaluateLiveEntryGuard>): string {\n  if (!result.allowed) return result.reason;\n  throw new Error("Expected the live entry guard to deny this input.");\n}\n\nconst safeInput = {
+function deniedReason(result: ReturnType<typeof evaluateLiveEntryGuard>): string {
+  if (!result.allowed) return result.reason;
+  throw new Error("Expected the live entry guard to deny this input.");
+}
+
+const safeInput = {
   emergencyStop: false,
   tokenScreenPassed: true,
   quotePassed: true,
