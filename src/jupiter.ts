@@ -67,13 +67,17 @@ export function usdToSolLamports(usd: number, solUsd: number): bigint {
   return lamports;
 }
 
+function finiteImpactValue(value: unknown): number | null {
+  if (typeof value !== "number" && (typeof value !== "string" || value.trim() === "")) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.abs(parsed) : null;
+}
+
 export function priceImpactToBps(order: Pick<JupiterOrder, "priceImpact" | "priceImpactPct">): number | null {
-  const impactPoints = typeof order.priceImpact === "number" ? order.priceImpact : Number(order.priceImpact);
-  if (Number.isFinite(impactPoints)) return Math.abs(impactPoints) * 100;
-  const legacyRatio = typeof order.priceImpactPct === "number"
-    ? order.priceImpactPct
-    : Number(order.priceImpactPct);
-  if (Number.isFinite(legacyRatio)) return Math.abs(legacyRatio) * 10_000;
+  const impactPoints = finiteImpactValue(order.priceImpact);
+  if (impactPoints !== null) return impactPoints * 100;
+  const legacyRatio = finiteImpactValue(order.priceImpactPct);
+  if (legacyRatio !== null) return legacyRatio * 10_000;
   return null;
 }
 
