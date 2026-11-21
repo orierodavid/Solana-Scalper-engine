@@ -99,8 +99,12 @@ export async function executeJupiterSwap(input: {
 
   const requiredSignerCount = transaction.message.header.numRequiredSignatures;
   const requiredSigners = transaction.message.staticAccountKeys.slice(0, requiredSignerCount);
-  if (!requiredSigners.some((key) => key.equals(input.signer.publicKey))) {
-    throw new Error("The live wallet is not a required signer for this Jupiter transaction.");
+  if (
+    requiredSignerCount < 1 ||
+    !requiredSigners[0]?.equals(input.signer.publicKey) ||
+    !requiredSigners.some((key) => key.equals(input.signer.publicKey))
+  ) {
+    throw new Error("The live wallet is not the fee payer and a required signer for this Jupiter transaction.");
   }
 
   // JupiterZ RFQ orders may need an additional market-maker signature later.
