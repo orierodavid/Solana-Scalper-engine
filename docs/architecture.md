@@ -41,3 +41,10 @@ If an entry cost cannot be reliably reconstructed, the worker must mark that ass
 ## Hosting
 
 Vercel is suitable for the web control panel and short API requests. The trading worker requires a persistent process host. A Vercel Cron schedule is not equivalent to an always-running process and should not be used as the sole mechanism for tight scalping exits.
+
+
+## Implemented read-only monitoring
+
+The initial worker reads the public wallet's SOL balance, SPL Token and Token-2022 account balances, and the latest 10 confirmed signatures. It does not sign, buy, sell, or store a trade ledger. RPC data is treated as untrusted and incomplete data must never trigger an order.
+
+This first monitoring stage does not yet calculate realized/unrealized P&L or infer cost basis. Those require correctly decoding attributable swap transactions and handling transfers, partial fills, fees, token account changes, and unknown prior holdings.
