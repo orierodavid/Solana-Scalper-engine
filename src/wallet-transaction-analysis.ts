@@ -71,10 +71,12 @@ export function analyzeWalletTransactionBalances(
   let metadataIncomplete = false;
   const add = (entries: ParsedTokenBalance[], side: "before" | "after") => {
     for (const item of entries) {
+      if (!item.owner) { metadataIncomplete = true; continue; }
       if (item.owner !== walletAddress) continue;
       if (!item.mint || !Number.isInteger(item.accountIndex) ||
           !item.uiTokenAmount || !/^\d+$/.test(String(item.uiTokenAmount.amount ?? "")) ||
           !Number.isInteger(item.uiTokenAmount.decimals) || (item.uiTokenAmount.decimals ?? -1) < 0) {
+        metadataIncomplete = true;
         continue;
       }
       const current = totals.get(item.mint) ?? {
