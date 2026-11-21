@@ -25,16 +25,16 @@ test("allows an entry only when all independent gates pass", () => {
 });
 
 test("emergency stop, token screening, quote and in-flight order gates fail closed", () => {
-  assert.match(evaluateLiveEntryGuard({ ...safeInput, emergencyStop: true }).reason!, /Emergency stop/);
-  assert.match(evaluateLiveEntryGuard({ ...safeInput, tokenScreenPassed: false }).reason!, /screening/);
-  assert.match(evaluateLiveEntryGuard({ ...safeInput, quotePassed: false }).reason!, /quote/);
-  assert.match(evaluateLiveEntryGuard({ ...safeInput, orderInFlight: true }).reason!, /in flight/);
+  assert.match(deniedReason(evaluateLiveEntryGuard({ ...safeInput, emergencyStop: true })), /Emergency stop/);
+  assert.match(deniedReason(evaluateLiveEntryGuard({ ...safeInput, tokenScreenPassed: false })), /screening/);
+  assert.match(deniedReason(evaluateLiveEntryGuard({ ...safeInput, quotePassed: false })), /quote/);
+  assert.match(deniedReason(evaluateLiveEntryGuard({ ...safeInput, orderInFlight: true })), /in flight/);
 });
 
 test("blocks oversized trades, daily loss limit, and concurrent position overflow", () => {
-  assert.match(evaluateLiveEntryGuard({ ...safeInput, tradeSizeLamports: "20000001" }).reason!, /exceeds/);
-  assert.match(evaluateLiveEntryGuard({ ...safeInput, realizedDailyLossLamports: "50000000" }).reason!, /Daily loss/);
-  assert.match(evaluateLiveEntryGuard({ ...safeInput, openPositions: 1 }).reason!, /Maximum concurrent/);
+  assert.match(deniedReason(evaluateLiveEntryGuard({ ...safeInput, tradeSizeLamports: "20000001" })), /exceeds/);
+  assert.match(deniedReason(evaluateLiveEntryGuard({ ...safeInput, realizedDailyLossLamports: "50000000" })), /Daily loss/);
+  assert.match(deniedReason(evaluateLiveEntryGuard({ ...safeInput, openPositions: 1 })), /Maximum concurrent/);
 });
 
 test("rejects missing or malformed financial limits instead of assuming safe defaults", () => {
