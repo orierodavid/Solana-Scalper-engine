@@ -11,6 +11,7 @@ const positiveNumber = z.string().trim().min(1).transform(Number).pipe(
 
 const envSchema = z.object({
   SOLANA_RPC_URL: z.string().url(),
+  WALLET_PUBLIC_ADDRESS: z.string().trim().default(""),
   TRADING_MODE: z.enum(["paper", "live"]).default("paper"),
   LIVE_TRADING_ENABLED: booleanFromEnv,
   TAKE_PROFIT_PERCENT: positiveNumber.default("20"),
