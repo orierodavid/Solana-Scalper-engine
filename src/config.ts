@@ -18,6 +18,7 @@ const envSchema = z.object({
   MAX_PRICE_IMPACT_BPS: z.coerce.number().int().min(1).max(500).default(100),
   MAX_ROUND_TRIP_COST_PERCENT: z.coerce.number().finite().min(0).max(50).default(3),
   POLL_INTERVAL_MS: z.coerce.number().int().min(1000).default(3000),
+  PAPER_SCAN_INTERVAL_MS: z.coerce.number().int().min(5000).default(30_000),
 });
 
 export type BotConfig = z.infer<typeof envSchema>;
