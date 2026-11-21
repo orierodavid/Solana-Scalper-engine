@@ -29,6 +29,12 @@ npm run scan:once
 
 The scan applies the existing $5,000 liquidity, $5,000 24-hour volume, and 20 transaction filters, then evaluates at most five candidates per run. It requests buy and reverse-sell quotes sequentially, checks each leg against \`MAX_PRICE_IMPACT_BPS\`, and rejects a route when the estimated round-trip swap loss exceeds \`MAX_ROUND_TRIP_COST_PERCENT\` (default 3%). Public CI logs contain aggregate counts only, not wallet data or token identifiers. A passing quote is only a quote-quality result; it is not a signal to buy and does not establish token safety or include every wallet/network cost.
 
+## Token security prefilter
+
+Before requesting Jupiter quotes, the scheduled scanner now checks each candidate through Solana RPC: supported SPL Token program ownership, parsed mint initialization, revoked mint/freeze authorities, non-zero supply, selected high-risk Token-2022 extensions, and the combined share held by the ten largest token accounts. Active mint/freeze authorities, selected risky extensions, and top-ten token-account concentration above 50% are rejected. Missing or incomplete RPC evidence is inconclusive and is never sent to quote evaluation.
+
+The top-ten figure is a token-account concentration proxy, not unique-wallet ownership. Pool, escrow, burn and other program-controlled accounts can distort it; this conservative prefilter is not a complete holder/insider analysis, liquidity-lock verification, honeypot test, or rug-pull audit. No token is declared safe.
+
 ## Quote-only test
 
 With Node.js 22.6+ installed, copy `.env.example` to `.env` and run:
