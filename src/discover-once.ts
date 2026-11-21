@@ -7,9 +7,9 @@ async function main(): Promise<void> {
     console.info("Solana market discovery completed.", {
       qualifyingCandidateCount: candidates.length,
       marketDataSource: "DexScreener",
-      minLiquidityUsd: 25_000,
-      minVolume24hUsd: 50_000,
-      minTransactions24h: 100,
+      minLiquidityUsd: 5_000,
+      minVolume24hUsd: 5_000,
+      minTransactions24h: 20,
       execution: "disabled",
       observedAt: new Date().toISOString(),
     });
