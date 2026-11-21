@@ -34,6 +34,14 @@ export type TokenSecuritySnapshot = {
   largestAccountAmounts: string[];
 };
 
+const KNOWN_TOKEN_2022_EXTENSIONS = new Set([
+  "transferFeeConfig", "transferFeeAmount", "mintCloseAuthority", "confidentialTransferMint",
+  "confidentialTransferAccount", "defaultAccountState", "immutableOwner", "memoTransfer",
+  "nonTransferable", "interestBearingConfig", "cpiGuard", "permanentDelegate",
+  "transferHook", "metadataPointer", "tokenMetadata", "groupPointer", "groupMemberPointer",
+  "scaledUiAmountConfig", "pausableConfig", "confidentialTransferFeeConfig",
+]);
+
 const HIGH_RISK_EXTENSIONS = new Set([
   "transferFeeConfig",
   "permanentDelegate",
@@ -41,7 +49,10 @@ const HIGH_RISK_EXTENSIONS = new Set([
   "nonTransferable",
   "confidentialTransferMint",
   "confidentialTransferFeeConfig",
+  "pausableConfig",
 ]);
+c
+
 
 function validAmount(value: string): bigint | null {
   if (!/^\d+$/.test(value)) return null;
@@ -90,7 +101,12 @@ export function assessTokenSecuritySnapshot(
     ? snapshot.mintInfo.extensions.map((item) => String(item.extension ?? "unknown"))
     : [];
 
+  let unknownExtension = false;
   for (const extension of extensions) {
+    if (!KNOWN_TOKEN_2022_EXTENSIONS.has(extension)) {
+      unknownExtension = true;
+      reasons.push(`Unrecognized Token-2022 extension requires manual review: ${extension}.`);
+    }
     if (HIGH_RISK_EXTENSIONS.has(extension)) {
       reasons.push(`Token-2022 extension requires rejection: ${extension}.`);
     }
@@ -119,7 +135,8 @@ export function assessTokenSecuritySnapshot(
     freezeAuthorityActive === null ||
     supply === null ||
     top10TokenAccountSharePercent === null ||
-    (is2022 && !Array.isArray(snapshot.mintInfo.extensions));
+    (is2022 && !Array.isArray(snapshot.mintInfo.extensions)) ||
+    unknownExtension;
 
   const hardReject = reasons.some((reason) =>
     reason.includes("authority is still active") ||
