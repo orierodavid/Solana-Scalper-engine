@@ -13,6 +13,7 @@ type DexPair = {
   volume?: Record<string, unknown>;
   txns?: Record<string, unknown>;
   pairCreatedAt?: unknown;
+  priceChange?: Record<string, unknown>;
 };
 
 export type Candidate = {
@@ -24,6 +25,9 @@ export type Candidate = {
   volume24hUsd: number;
   transactions24h: number;
   pairCreatedAt: number | null;
+  priceChange5mPercent: number | null;
+  buys5m: number | null;
+  sells5m: number | null;
 };
 
 const API = "https://api.dexscreener.com";
@@ -43,6 +47,20 @@ async function getJson<T>(url: string): Promise<T> {
 function finiteNumber(value: unknown): number | null {
   const number = typeof value === "number" ? value : Number(value);
   return Number.isFinite(number) && number >= 0 ? number : null;
+}
+
+function signedNumber(value: unknown): number | null {
+  const number = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+/** A short-term momentum signal, not a prediction or guarantee of profit. */
+export function hasMomentumEntrySignal(candidate: Candidate): boolean {
+  return candidate.priceChange5mPercent !== null &&
+    candidate.priceChange5mPercent > 0 &&
+    candidate.buys5m !== null &&
+    candidate.sells5m !== null &&
+    candidate.buys5m > candidate.sells5m;
 }
 
 /**
@@ -94,6 +112,9 @@ export async function discoverSolanaCandidates(): Promise<Candidate[]> {
       volume24hUsd,
       transactions24h,
       pairCreatedAt: typeof pair.pairCreatedAt === "number" ? pair.pairCreatedAt : null,
+      priceChange5mPercent: signedNumber(pair.priceChange?.m5),
+      buys5m: finiteNumber((pair.txns?.m5 as Record<string, unknown> | undefined)?.buys),
+      sells5m: finiteNumber((pair.txns?.m5 as Record<string, unknown> | undefined)?.sells),
     };
 
     const previous = bestByMint.get(mint);
