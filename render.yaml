@@ -1,0 +1,20 @@
+services:
+  - type: worker
+    name: solana-scalper-worker
+    runtime: node
+    plan: starter
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: npm run worker
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: TRADING_MODE
+        value: paper
+      - key: LIVE_TRADING_ENABLED
+        value: "false"
+      - key: POLL_INTERVAL_MS
+        value: "3000"
+      - key: WALLET_PUBLIC_ADDRESS
+        sync: false
