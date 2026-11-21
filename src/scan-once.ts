@@ -31,14 +31,9 @@ export type ReadOnlyScanSummary = {
 export async function runReadOnlyScan(): Promise<ReadOnlyScanSummary> {
   const config = loadConfig();
   const candidates = (await discoverSolanaCandidates()).slice(0, MAX_CANDIDATES_PER_RUN);
-
-  let passed = 0;
-  let rejected = 0;
-  let errors = 0;
-  let securityRejected = 0;
-  let securityInconclusive = 0;
-  let rugCheckRejected = 0;
-  let rugCheckInconclusive = 0;
+  let passed = 0, rejected = 0, errors = 0;
+  let securityRejected = 0, securityInconclusive = 0;
+  let rugCheckRejected = 0, rugCheckInconclusive = 0;
 
   for (let index = 0; index < candidates.length; index += 1) {
     const candidate = candidates[index];
@@ -49,14 +44,12 @@ export async function runReadOnlyScan(): Promise<ReadOnlyScanSummary> {
         else securityInconclusive += 1;
         continue;
       }
-
       const rugCheck = await screenWithRugCheck(candidate.mint);
       if (rugCheck.status !== "screen_passed") {
         if (rugCheck.status === "rejected") rugCheckRejected += 1;
         else rugCheckInconclusive += 1;
         continue;
       }
-
       const result = await evaluateJupiterRoundTrip({
         mint: candidate.mint,
         tradeSizeUsd: config.TRADE_SIZE_USD,
@@ -64,32 +57,19 @@ export async function runReadOnlyScan(): Promise<ReadOnlyScanSummary> {
         maxRoundTripCostPercent: config.MAX_ROUND_TRIP_COST_PERCENT,
         apiKey: process.env.JUPITER_API_KEY?.trim() || undefined,
       });
-
       if (result.status === "quote_passed") passed += 1;
       else rejected += 1;
-    } catch {
-      errors += 1;
-    }
-
+    } catch { errors += 1; }
     if (index < candidates.length - 1) await wait(JUPITER_KEYLESS_INTERVAL_MS);
   }
 
   const summary: ReadOnlyScanSummary = {
-    discoveredCandidates: candidates.length,
-    maxCandidatesPerRun: MAX_CANDIDATES_PER_RUN,
-    quotePassed: passed,
-    quoteRejected: rejected,
-    quoteErrors: errors,
-    securityRejected,
-    securityInconclusive,
-    rugCheckRejected,
-    rugCheckInconclusive,
-    tradeSizeUsd: config.TRADE_SIZE_USD,
-    maxPriceImpactBps: config.MAX_PRICE_IMPACT_BPS,
+    discoveredCandidates: candidates.length, maxCandidatesPerRun: MAX_CANDIDATES_PER_RUN,
+    quotePassed: passed, quoteRejected: rejected, quoteErrors: errors,
+    securityRejected, securityInconclusive, rugCheckRejected, rugCheckInconclusive,
+    tradeSizeUsd: config.TRADE_SIZE_USD, maxPriceImpactBps: config.MAX_PRICE_IMPACT_BPS,
     maxRoundTripCostPercent: config.MAX_ROUND_TRIP_COST_PERCENT,
-    execution: "disabled",
-    walletSigning: "disabled",
-    transactionSubmission: "disabled",
+    execution: "disabled", walletSigning: "disabled", transactionSubmission: "disabled",
     observedAt: new Date().toISOString(),
   };
   console.info("Read-only discovery and quote scan completed.", summary);
@@ -97,8 +77,3 @@ export async function runReadOnlyScan(): Promise<ReadOnlyScanSummary> {
   console.info("A quote pass is not authorization to trade.");
   return summary;
 }
-
-runReadOnlyScan().catch(() => {
-  console.error("Read-only discovery and quote scan failed. No trades were submitted.");
-  process.exitCode = 1;
-});
