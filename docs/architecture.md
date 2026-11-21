@@ -25,6 +25,8 @@ Before quote evaluation, the scanner reads parsed mint state, token supply and t
 
 Largest token accounts are not the same as beneficial owners: pools, escrows and program-controlled accounts can distort the concentration proxy. This is a fail-closed prefilter, not a full RugCheck/insider analysis, LP-lock audit, honeypot simulation, or guarantee against malicious behavior. No aggregate score or claim of safety is inferred.
 
+The scanner also calls RugCheck's public read-only report-summary endpoint. It requires a normalized score, risk list and LP locked percentage. It rejects scores above 40, high/critical/danger findings and LP lock coverage below 50%; 50–79.99% is inconclusive, and 80% or higher is required to proceed. Provider errors and missing fields block quote evaluation. These configured thresholds are heuristics, not proof of safety or permanent liquidity lock.
+
 ## Quote-only Jupiter integration
 
 - Uses Jupiter Swap API V2 `GET /order` without the `taker` parameter. Jupiter documents that this returns quote data with `transaction: null`.
