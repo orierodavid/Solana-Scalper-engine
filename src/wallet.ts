@@ -1,4 +1,5 @@
-import { Connection, PublicKey, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export interface WalletTokenBalance {
   mint: string;
