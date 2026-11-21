@@ -41,7 +41,7 @@ The scanner also calls RugCheck's public read-only report-summary endpoint. It r
 - Converts the configured USD notional into SOL lamports using the most liquid wrapped-SOL/stablecoin pair from DexScreener.
 - Requests a buy quote and a reverse sell quote for the exact quoted token output. Both requests are read-only.
 - Rejects missing/mismatched quote amounts, missing price-impact data, and price impact above `MAX_PRICE_IMPACT_BPS`.
-- Does not sign, build, or submit transactions. Quote evaluation is not token-security clearance or live-trade authorization.
+- The quote-only scanner does not sign or submit transactions. A separate guarded Jupiter V2 execution primitive now obtains an order with the configured wallet as taker, checks the requested mints and amount, deserializes the returned versioned transaction, requires the configured wallet to be one of its required signers, partially signs it, and posts it with the request ID to `/execute`. It accepts only an explicit successful response with code `0` and actual input/output amounts. Ambiguous network outcomes are not retried automatically. This primitive is not yet wired into a worker and does not constitute live readiness.
 - The round-trip quote includes route pricing/quoted swap charges, but does not fully establish wallet-specific rent, signature/priority fees, or execution-time slippage. Those must be checked separately before live trading.
 - Keyless Jupiter requests are rate-limited; an optional API key can be supplied privately as `JUPITER_API_KEY`.
 
@@ -57,7 +57,7 @@ The scanner also calls RugCheck's public read-only report-summary endpoint. It r
 - Dedicated wallet with limited funds.
 - Server-side signing only; no private key exposed to browser or logs.
 - Explicit live-trading enable flag and startup validation.
-- Maximum trade size, maximum daily loss, and maximum concurrent positions.
+- Maximum trade size, enforced maximum daily loss, and maximum concurrent positions.
 - Token mint and liquidity screening; reject frozen/unsupported token accounts and suspicious assets.
 - Quote freshness, price impact, slippage cap, transaction simulation, and confirmation checks.
 - Duplicate-order/idempotency protection.
